@@ -1,0 +1,34 @@
+Sclc;
+clear;
+close all;
+
+img = imread('images (1).jpeg');
+gray_img = rgb2gray(img);
+figure, imshow(gray_img); title('Original Gray Image');
+
+F = fft2(double(gray_img));
+F_shifted = fftshift(F);
+[row, col] = size(gray_img);
+sigma = 10;  
+[x, y] = meshgrid(linspace(-col/2, col/2, col), linspace(-row/2, row/2, row));
+gauss_low = exp(-(x.^2 + y.^2) / (2*sigma^2));
+gauss_high = 1 - gauss_low;
+
+% تطبيق الفلاتر
+F_low = F_shifted .* gauss_low;
+F_high = F_shifted .* gauss_high;
+
+% التحويل العكسي
+img_low = real(ifft2(ifftshift(F_low)));
+img_high = real(ifft2(ifftshift(F_high)));
+
+img_low = uint8(255 * mat2gray(img_low));
+img_high = uint8(255 * mat2gray(img_high));
+
+
+figure, imshow(log(1 + abs(F_shifted)), []); title('Shifted FFT');
+figure, imshow(gauss_low, []); title('Gaussian Low-Pass Filter');
+figure, imshow(gauss_high, []); title('Gaussian High-Pass Filter');
+figure, imshow(img_low); title('Low-Frequency Image');
+figure, imshow(img_high); title('High-Frequency Image');
+figure, imshowpair(img_low, img_high, 'montage'); title('Low vs High');
